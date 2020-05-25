@@ -1,9 +1,26 @@
-const express = require("express");
+const express = require('express');
 
-const userRouter = require("./routes/userRouter")
+const AppError = require('./utils/appError');
+const userRouter = require('./routes/userRouter');
+const schoolRouter = require('./routes/schoolRouter');
 
-const app = express()
+const app = express();
 
-app.use("/api/v1/users",userRouter)
+// Middlewares stack
+app.use(express.json());
 
-module.exports = app
+// All the basic resources routes
+app.use('/api/v1/schools', schoolRouter);
+app.use('/api/v1/users', userRouter);
+
+// ERROR HANDLING
+// step 1 -> Handling all the unhandled routes
+app.all('*', (req, res, next) => {
+  next(new AppError(`can't find ${req.originalUrl} on this server`, 404));
+});
+
+// step2 --> creating a global error handling middleware
+
+app.use();
+
+module.exports = app;

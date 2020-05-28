@@ -1,95 +1,75 @@
 const School = require('../models/schoolModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
-exports.createSchool = async (req, res) => {
-  try {
-    const newSchool = await School.create(req.body);
+exports.createSchool = catchAsync(async (req, res) => {
+  const newSchool = await School.create(req.body);
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        school: newSchool,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
+  res.status(201).json({
+    status: 'success',
+    data: {
+      school: newSchool,
+    },
+  });
+});
+
+exports.getAllSchool = catchAsync(async (req, res) => {
+  const schools = await School.find();
+  res.status(200).json({
+    status: 'success',
+    results: schools.length,
+    data: {
+      schools,
+    },
+  });
+});
+
+exports.getSchool = catchAsync(async (req, res, next) => {
+  const school = await School.findById(req.params.id);
+
+  if (!school) {
+    return next(new AppError('No tour found with that id', 404));
   }
-};
 
-exports.getAllSchool = async (req, res) => {
-  try {
-    const schools = await School.find();
-    res.status(200).json({
-      status: 'success',
-      results: schools.length,
-      data: {
-        schools,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'fail',
-      message: err,
-    });
+  res.status(200).json({
+    status: 'success',
+    data: {
+      school,
+    },
+  });
+});
+
+exports.updateSchool = catchAsync(async (req, res, next) => {
+  const updatedSchool = await School.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!updatedSchool) {
+    return next(new AppError('No tour found with that id', 404));
   }
-};
 
-exports.getSchool = async (req, res) => {
-  try {
-    const school = await School.findById(req.params.id);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      updatedSchool,
+    },
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        school,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: 'fail',
-      message: err,
-    });
+exports.deleteSchool = catchAsync(async (req, res, next) => {
+  const school = await School.findByIdAndDelete(req.params.id);
+
+  if (!school) {
+    return next(new AppError('No tour found with that id', 404));
   }
-};
 
-exports.updateSchool = async (req, res) => {
-  try {
-    const updatedSchool = await School.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        updatedSchool,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
-
-exports.deleteSchool = async (req, res) => {
-  try {
-    await School.findByIdAndDelete(req.params.id);
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'fail',
-      message: err,
-    });
-  }
-};
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+});

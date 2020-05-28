@@ -3,6 +3,7 @@ const express = require('express');
 const AppError = require('./utils/appError');
 const userRouter = require('./routes/userRouter');
 const schoolRouter = require('./routes/schoolRouter');
+const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 
@@ -19,8 +20,10 @@ app.all('*', (req, res, next) => {
   next(new AppError(`can't find ${req.originalUrl} on this server`, 404));
 });
 
-// step2 --> creating a global error handling middleware
+// step2 --> Creating a custom error handling class
 
-app.use();
+// step3 --> creating a global error handling middleware
+
+app.use(globalErrorHandler);
 
 module.exports = app;

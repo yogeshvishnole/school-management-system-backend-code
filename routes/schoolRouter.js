@@ -1,13 +1,14 @@
 const express = require('express');
 
 const schoolController = require('../controllers/schoolController');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 
 router
   .route('/')
   .post(schoolController.createSchool)
-  .get(schoolController.getAllSchool);
+  .get(authController.protect, schoolController.getAllSchool);
 
 router
   .route('/:id')

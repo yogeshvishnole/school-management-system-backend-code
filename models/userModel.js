@@ -1,20 +1,13 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Name is must for organisation'],
+    required: [true, 'Please tell us your name'],
     unique: true,
     trim: true,
-    maxlength: [
-      150,
-      'Number of characters should be less than or equal to 150',
-    ],
-    minlength: [
-      20,
-      'Organisation name should have more than 20 chaaracters in name',
-    ],
   },
   email: {
     type: String,
@@ -33,6 +26,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please confirm your password'],
     validate: {
+      // This only works on save
       validator: function (el) {
         return el === this.password;
       },
@@ -53,6 +47,15 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+});
+
+userSchema.pre('save', async function (next) {
+  // run this function only when passwprd is actually modified
+  if (!this.isModified('password')) return next();
+  // hash the password with the cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+  // delete the passwordConfirm field
+  this.passwordConfirm = undefined;
 });
 
 const User = mongoose.model('User', userSchema);
